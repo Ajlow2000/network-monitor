@@ -60,6 +60,7 @@ func ping(target string) bool {
 	return result
 }
 
+<<<<<<< HEAD
 func notify(e Event) {
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", "ajlow2000.api@gmail.com")
@@ -82,6 +83,12 @@ func main() {
 	var downtime_start time.Time
 	var downtime_end time.Time
 
+=======
+func main() {
+	var downtime_start time.Time
+	var downtime_end time.Time
+
+>>>>>>> main
 	log.Printf("Beginning monitor")
 	for {
 		result := ping(wanTarget)
@@ -89,9 +96,13 @@ func main() {
 			Info_Level.Printf("%v Unreachable", wanTarget)
 			if downtime_start.IsZero() {
 				downtime_start = time.Now()
+<<<<<<< HEAD
 				e := Event{"Outage Detected", downtime_start, downtime_end}
 				Event_Level.Printf(e.Desc)
 				notify(e)
+=======
+				Event_Level.Printf("Outage Detected")
+>>>>>>> main
 			}
 		} else {
 			Info_Level.Printf("%v Received", wanTarget)
@@ -99,9 +110,13 @@ func main() {
 				downtime_end = time.Now()
 				duration := downtime_end.Sub(downtime_start)
 
+<<<<<<< HEAD
 				e := Event{"Outage Resolved", downtime_start, downtime_end}
 				Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
 				notify(e)
+=======
+				Event_Level.Printf("Outage Resolved - Duration (seconds): %v", duration.Seconds())
+>>>>>>> main
 
 				downtime_start = time.Time{}
 				downtime_end = time.Time{}
