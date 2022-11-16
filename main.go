@@ -34,40 +34,6 @@ type Event struct {
 	End   time.Time
 }
 
-func notify(ch chan) {
-}
-
-func monitor(ch chan) {
-	var downtime_start time.Time
-	var downtime_end time.Time
-
-	log.Printf("Beginning monitor")
-	for {
-		result := ping(wanTarget)
-		if !result {
-			Info_Level.Printf("%v Unreachable", wanTarget)
-			if downtime_start.IsZero() {
-				downtime_start = time.Now()
-				Event_Level.Printf("Outage Detected")
-				// ch <- Event{"Outage", downtime_start, time.Time{}}
-			}
-		} else {
-			Info_Level.Printf("%v Received", wanTarget)
-			if !downtime_start.IsZero() && downtime_end.IsZero() {
-				downtime_end = time.Now()
-				duration := downtime_end.Sub(downtime_start)
-
-				Event_Level.Printf("Outage Resolved - Duration (seconds): %v", duration.Seconds())
-				// ch <- Event{"Outage Resolved", downtime_start, downtime_end}
-
-				downtime_start = time.Time{}
-				downtime_end = time.Time{}
-			}
-		}
-		time.Sleep(time.Second * INTERVAL)
-	}
-}
-
 func ping(target string) bool {
 	result := false
 
@@ -93,8 +59,30 @@ func ping(target string) bool {
 }
 
 func main() {
-	channel := make(chan Event)
+	var downtime_start time.Time
+	var downtime_end time.Time
 
-	go monitor(channel)
-	go notify(channel)
+	log.Printf("Beginning monitor")
+	for {
+		result := ping(wanTarget)
+		if !result {
+			Info_Level.Printf("%v Unreachable", wanTarget)
+			if downtime_start.IsZero() {
+				downtime_start = time.Now()
+				Event_Level.Printf("Outage Detected")
+			}
+		} else {
+			Info_Level.Printf("%v Received", wanTarget)
+			if !downtime_start.IsZero() && downtime_end.IsZero() {
+				downtime_end = time.Now()
+				duration := downtime_end.Sub(downtime_start)
+
+				Event_Level.Printf("Outage Resolved - Duration (seconds): %v", duration.Seconds())
+
+				downtime_start = time.Time{}
+				downtime_end = time.Time{}
+			}
+		}
+		time.Sleep(time.Second * INTERVAL)
+	}
 }
