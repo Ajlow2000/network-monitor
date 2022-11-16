@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/tatsushid/go-fastping"
+	"gopkg.in/gomail.v2"
+	// requires iwgetid util
 )
 
 var (
@@ -34,40 +36,6 @@ type Event struct {
 	End   time.Time
 }
 
-func notify(ch chan) {
-}
-
-func monitor(ch chan) {
-	var downtime_start time.Time
-	var downtime_end time.Time
-
-	log.Printf("Beginning monitor")
-	for {
-		result := ping(wanTarget)
-		if !result {
-			Info_Level.Printf("%v Unreachable", wanTarget)
-			if downtime_start.IsZero() {
-				downtime_start = time.Now()
-				Event_Level.Printf("Outage Detected")
-				// ch <- Event{"Outage", downtime_start, time.Time{}}
-			}
-		} else {
-			Info_Level.Printf("%v Received", wanTarget)
-			if !downtime_start.IsZero() && downtime_end.IsZero() {
-				downtime_end = time.Now()
-				duration := downtime_end.Sub(downtime_start)
-
-				Event_Level.Printf("Outage Resolved - Duration (seconds): %v", duration.Seconds())
-				// ch <- Event{"Outage Resolved", downtime_start, downtime_end}
-
-				downtime_start = time.Time{}
-				downtime_end = time.Time{}
-			}
-		}
-		time.Sleep(time.Second * INTERVAL)
-	}
-}
-
 func ping(target string) bool {
 	result := false
 
@@ -92,9 +60,53 @@ func ping(target string) bool {
 	return result
 }
 
-func main() {
-	channel := make(chan Event)
+func notify(e Event) {
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", "ajlow2000.api@gmail.com")
+	msg.SetHeader("To", "junkmail00310@gmail.com")
+	msg.SetHeader("Subject", e.Desc)
+	msg.SetBody("text/html", "<b>This is the body of the mail</b>")
+	// msg.Attach("/home/User/cat.jpg")
 
-	go monitor(channel)
-	go notify(channel)
+	n := gomail.NewDialer("smtp.gmail.com", 587, "ajlow2000.api@gmail.com", "urtpnabjocusjdwe")
+
+	// Send the email
+	if err := n.DialAndSend(msg); err != nil {
+		panic(err)
+	}
+
+}
+
+func main() {
+	// fmt.Println("wifi name ", wifiname.WifiName())
+	var downtime_start time.Time
+	var downtime_end time.Time
+
+	log.Printf("Beginning monitor")
+	for {
+		result := ping(wanTarget)
+		if !result {
+			Info_Level.Printf("%v Unreachable", wanTarget)
+			if downtime_start.IsZero() {
+				downtime_start = time.Now()
+				e := Event{"Outage Detected", downtime_start, downtime_end}
+				Event_Level.Printf(e.Desc)
+				notify(e)
+			}
+		} else {
+			Info_Level.Printf("%v Received", wanTarget)
+			if !downtime_start.IsZero() && downtime_end.IsZero() {
+				downtime_end = time.Now()
+				duration := downtime_end.Sub(downtime_start)
+
+				e := Event{"Outage Resolved", downtime_start, downtime_end}
+				Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
+				notify(e)
+
+				downtime_start = time.Time{}
+				downtime_end = time.Time{}
+			}
+		}
+		time.Sleep(time.Second * INTERVAL)
+	}
 }
