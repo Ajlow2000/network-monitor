@@ -103,19 +103,19 @@ func emailNotify(e Event) {
 	t.Execute(&body, pe)
 
 	msg := gomail.NewMessage()
-	msg.SetHeader("From", "ajlow2000.api@gmail.com")
-	msg.SetHeader("To", "ajlow2000.api@gmail.com")
+	msg.SetHeader("From", os.Getenv("NM_API_EMAIL"))
+	msg.SetHeader("To", os.Getenv("NM_RECIPIENT_EMAIL"))
 	msg.SetHeader("Subject", e.Desc+" at "+getSSID())
 	msg.SetBody("text/html", body.String())
 	msg.Attach("network-monitor.log")
 
-	n := gomail.NewDialer("smtp.gmail.com", 587, "ajlow2000.api@gmail.com", os.Getenv("NM_API_EMAIL_PASSWORD"))
+	n := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("NM_API_EMAIL"), os.Getenv("NM_API_EMAIL_PASSWORD"))
 
 	// Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		Error_Level.Printf(err.Error())
 	}
-	Event_Level.Printf("Email Sent")
+	log.Println("Email Sent to " + os.Getenv("NM_RECIPIENT_EMAIL"))
 }
 
 func getSSID() string {
@@ -155,7 +155,7 @@ func main() {
 	var downtime_start time.Time
 	var downtime_end time.Time
 
-	log.Printf("Beginning monitor")
+	log.Printf("Beginning network-monitor")
 	for {
 		result := pingCmd(wanTarget)
 		if !result {
