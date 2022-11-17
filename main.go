@@ -109,7 +109,7 @@ func emailNotify(e Event) {
 	msg.SetBody("text/html", body.String())
 	msg.Attach("network-monitor.log")
 
-	n := gomail.NewDialer("smtp.gmail.com", 587, "ajlow2000.api@gmail.com", "urtpnabjocusjdwe")
+	n := gomail.NewDialer("smtp.gmail.com", 587, "ajlow2000.api@gmail.com", os.Getenv("NM_API_EMAIL_PASSWORD"))
 
 	// Send the email
 	if err := n.DialAndSend(msg); err != nil {
