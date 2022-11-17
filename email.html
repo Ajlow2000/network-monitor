@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network--Monitor Report</title>
+</head>
+<body>
+    <h2>{{ .Desc }} </h2>
+        <p>Outage detected at: {{ .Start }}</p>
+        <br>
+        <p>Outage resolved at: {{ .End }}</p>
+        <br>
+        <p>Duration: {{ .Duration }} minutes</p>
+        
+</body>
+</html>
