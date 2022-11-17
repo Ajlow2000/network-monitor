@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"text/template"
 	"time"
 
 	"github.com/tatsushid/go-fastping"
@@ -15,6 +17,7 @@ import (
 var (
 	Info_Level  *log.Logger
 	Event_Level *log.Logger
+	Error_Level *log.Logger
 )
 
 func init() {
@@ -25,6 +28,7 @@ func init() {
 
 	Info_Level = log.New(file, "INFO : ", log.Ldate|log.Ltime)
 	Event_Level = log.New(file, "EVENT: ", log.Ldate|log.Ltime)
+	Error_Level = log.New(file, "ERROR: ", log.Ldate|log.Ltime)
 }
 
 const wanTarget = "8.8.8.8"
@@ -60,68 +64,60 @@ func ping(target string) bool {
 	return result
 }
 
-<<<<<<< HEAD
 func notify(e Event) {
+	var body bytes.Buffer
+	t, err := template.ParseFiles("email.html")
+	if err != nil {
+		Error_Level.Printf("Error opening email.html template")
+		return
+	}
+	t.Execute(&body, e)
+
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", "ajlow2000.api@gmail.com")
 	msg.SetHeader("To", "junkmail00310@gmail.com")
 	msg.SetHeader("Subject", e.Desc)
-	msg.SetBody("text/html", "<b>This is the body of the mail</b>")
+	msg.SetBody("text/html", body.String())
 	// msg.Attach("/home/User/cat.jpg")
 
 	n := gomail.NewDialer("smtp.gmail.com", 587, "ajlow2000.api@gmail.com", "urtpnabjocusjdwe")
 
 	// Send the email
 	if err := n.DialAndSend(msg); err != nil {
-		panic(err)
+		Error_Level.Printf(err.Error())
 	}
-
 }
 
 func main() {
-	// fmt.Println("wifi name ", wifiname.WifiName())
-	var downtime_start time.Time
-	var downtime_end time.Time
+	notify(Event{"TEST NOTIF", time.Now(), time.Time{}})
+	// var downtime_start time.Time
+	// var downtime_end time.Time
 
-=======
-func main() {
-	var downtime_start time.Time
-	var downtime_end time.Time
+	// log.Printf("Beginning monitor")
+	// for {
+	// 	result := ping(wanTarget)
+	// 	if !result {
+	// 		Info_Level.Printf("%v Unreachable", wanTarget)
+	// 		if downtime_start.IsZero() {
+	// 			downtime_start = time.Now()
+	// 			e := Event{"Outage Detected", downtime_start, downtime_end}
+	// 			Event_Level.Printf(e.Desc)
+	// 			notify(e)
+	// 		}
+	// 	} else {
+	// 		Info_Level.Printf("%v Received", wanTarget)
+	// 		if !downtime_start.IsZero() && downtime_end.IsZero() {
+	// 			downtime_end = time.Now()
+	// 			duration := downtime_end.Sub(downtime_start)
 
->>>>>>> main
-	log.Printf("Beginning monitor")
-	for {
-		result := ping(wanTarget)
-		if !result {
-			Info_Level.Printf("%v Unreachable", wanTarget)
-			if downtime_start.IsZero() {
-				downtime_start = time.Now()
-<<<<<<< HEAD
-				e := Event{"Outage Detected", downtime_start, downtime_end}
-				Event_Level.Printf(e.Desc)
-				notify(e)
-=======
-				Event_Level.Printf("Outage Detected")
->>>>>>> main
-			}
-		} else {
-			Info_Level.Printf("%v Received", wanTarget)
-			if !downtime_start.IsZero() && downtime_end.IsZero() {
-				downtime_end = time.Now()
-				duration := downtime_end.Sub(downtime_start)
+	// 			e := Event{"Outage Resolved", downtime_start, downtime_end}
+	// 			Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
+	// 			notify(e)
 
-<<<<<<< HEAD
-				e := Event{"Outage Resolved", downtime_start, downtime_end}
-				Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
-				notify(e)
-=======
-				Event_Level.Printf("Outage Resolved - Duration (seconds): %v", duration.Seconds())
->>>>>>> main
-
-				downtime_start = time.Time{}
-				downtime_end = time.Time{}
-			}
-		}
-		time.Sleep(time.Second * INTERVAL)
-	}
+	// 			downtime_start = time.Time{}
+	// 			downtime_end = time.Time{}
+	// 		}
+	// 	}
+	// 	time.Sleep(time.Second * INTERVAL)
+	// }
 }
