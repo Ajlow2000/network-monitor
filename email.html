@@ -7,8 +7,12 @@
     <title>Network--Monitor Report</title>
 </head>
 <body>
-    <b>This is the body of the mail</b>
-
-    <p>Outage Started at: {{ .Start }}</p>
+    <h2>{{ .Desc }} </h2>
+        <p>Outage detected at: {{ .Start }}</p>
+        <br>
+        <p>Outage resolved at: {{ .End }}</p>
+        <br>
+        <p>Duration: {{ .Duration }} minutes</p>
+        
 </body>
 </html>
