@@ -14,7 +14,6 @@ import (
 
 	"github.com/tatsushid/go-fastping"
 	"gopkg.in/gomail.v2"
-	// requires iwgetid util
 )
 
 var (
@@ -160,18 +159,22 @@ func main() {
 		result := pingCmd(wanTarget)
 		if !result {
 			Info_Level.Printf("%v Unreachable", wanTarget)
+			log.Printf("%v Unreachable", wanTarget)
 			if downtime_start.IsZero() {
 				downtime_start = time.Now()
 				Event_Level.Printf("Outage Detected")
+				log.Printf("Outage Detected")
 			}
 		} else {
 			Info_Level.Printf("%v Received", wanTarget)
+			log.Printf("%v Received", wanTarget)
 			if !downtime_start.IsZero() && downtime_end.IsZero() {
 				downtime_end = time.Now()
 				duration := downtime_end.Sub(downtime_start)
 
 				e := Event{getSSID(), "Outage Resolved", downtime_start, downtime_end}
 				Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
+				log.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
 				emailNotify(e)
 
 				downtime_start = time.Time{}
