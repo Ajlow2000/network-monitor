@@ -9,3 +9,4 @@ services:
       - NM_API_EMAIL=ajlow2000.api@gmail.com
       - NM_API_EMAIL_PASSWORD=tgwvziimiffmxwpb
       - NM_RECIPIENT_EMAIL=junkmail00310@gmail.com
+      - NM_SSID=FamilyNet

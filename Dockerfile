@@ -1,10 +1,10 @@
 # https://www.docker.com/blog/developing-go-apps-docker/
 
 # Specifies a parent image
-FROM golang:1.18-alpine3.16 
+FROM golang:1.19-bullseye
 
 # Install Ping Command
-RUN apk add --update iputils
+# RUN apt install iputils-ping
 
 # Creates an app directory to hold your app’s source code
 WORKDIR /app
