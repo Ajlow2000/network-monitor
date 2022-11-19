@@ -1,8 +1,9 @@
 version: "3.9"
 services:
   network-monitor:
-    image: network-monitor:test
+    image: network-monitor:latest
     container_name: nmtest
+    network_mode: bridge
     ports:
       - "587:587"
     environment:

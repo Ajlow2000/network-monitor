@@ -3,21 +3,15 @@
 # Specifies a parent image
 FROM golang:1.19-bullseye
 
-# Install Ping Command
-# RUN apt install iputils-ping
-
 # Creates an app directory to hold your app’s source code
 WORKDIR /app
  
-# Copy over all go config (go.mod, go.sum etc.)
-COPY go.* ./
-
+# Copy over all files
+COPY * ./
+ 
 # Install any required modules
 RUN go mod download
 
-# Copy over Go source code
-COPY *.go ./
- 
 # Builds your app with optional configuration
 RUN go build -o /network-monitor
  
