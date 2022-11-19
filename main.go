@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"log"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/tatsushid/go-fastping"
 	"gopkg.in/gomail.v2"
-	// requires iwgetid util
 )
 
 var (
@@ -119,36 +117,37 @@ func emailNotify(e Event) {
 }
 
 func getSSID() string {
-	cmd := exec.Command("nmcli", "connection", "show", "--active")
+	return os.Getenv("NM_SSID")
+	// cmd := exec.Command("nmcli", "connection", "show", "--active")
 
-	out, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// out, err := cmd.StdoutPipe()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
+	// if err := cmd.Start(); err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	scan := bufio.NewScanner(out)
-	for scan.Scan() {
-		line := scan.Text()
-		if !strings.Contains(line, "wifi") {
-			continue
-		}
+	// scan := bufio.NewScanner(out)
+	// for scan.Scan() {
+	// 	line := scan.Text()
+	// 	if !strings.Contains(line, "wifi") {
+	// 		continue
+	// 	}
 
-		parts := strings.SplitN(line, " ", 2)
-		return parts[0]
-	}
+	// 	parts := strings.SplitN(line, " ", 2)
+	// 	return parts[0]
+	// }
 
-	if err := scan.Err(); err != nil {
-		Error_Level.Fatal(err)
-	}
+	// if err := scan.Err(); err != nil {
+	// 	Error_Level.Fatal(err)
+	// }
 
-	if err := cmd.Wait(); err != nil {
-		Error_Level.Fatal(err)
-	}
-	return ""
+	// if err := cmd.Wait(); err != nil {
+	// 	Error_Level.Fatal(err)
+	// }
+	// return ""
 }
 
 func main() {
@@ -157,21 +156,25 @@ func main() {
 
 	log.Printf("Beginning network-monitor")
 	for {
-		result := pingCmd(wanTarget)
+		result := ping(wanTarget)
 		if !result {
 			Info_Level.Printf("%v Unreachable", wanTarget)
+			log.Printf("%v Unreachable", wanTarget)
 			if downtime_start.IsZero() {
 				downtime_start = time.Now()
 				Event_Level.Printf("Outage Detected")
+				log.Printf("Outage Detected")
 			}
 		} else {
 			Info_Level.Printf("%v Received", wanTarget)
+			log.Printf("%v Received", wanTarget)
 			if !downtime_start.IsZero() && downtime_end.IsZero() {
 				downtime_end = time.Now()
 				duration := downtime_end.Sub(downtime_start)
 
 				e := Event{getSSID(), "Outage Resolved", downtime_start, downtime_end}
 				Event_Level.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
+				log.Printf(e.Desc+" - Duration (seconds): %v", duration.Seconds())
 				emailNotify(e)
 
 				downtime_start = time.Time{}

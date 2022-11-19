@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  network-monitor:
+    image: network-monitor:latest
+    container_name: nmtest
+    network_mode: bridge
+    ports:
+      - "587:587"
+    environment:
+      - NM_API_EMAIL=ajlow2000.api@gmail.com
+      - NM_API_EMAIL_PASSWORD=<REPLACE_ME>
+      - NM_RECIPIENT_EMAIL=junkmail00310@gmail.com
+      - NM_SSID=FamilyNet
