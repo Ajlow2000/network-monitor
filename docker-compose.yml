@@ -7,7 +7,7 @@ services:
     ports:
       - "587:587"
     environment:
-      - NM_PING_INTERVAL=10  # miutes
+      - NM_PING_INTERVAL=10  # minutes
       - NM_API_EMAIL=
       - NM_API_EMAIL_PASSWORD=
       - NM_RECIPIENT_EMAIL=
