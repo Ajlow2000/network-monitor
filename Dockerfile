@@ -1,5 +1,3 @@
-# https://www.docker.com/blog/developing-go-apps-docker/
-
 # Specifies a parent image
 FROM golang:1.19-bullseye
 
