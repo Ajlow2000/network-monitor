@@ -6,7 +6,7 @@ To build a local image:
 
 `docker build -t network-monitor .`
 
-To run:
+To launch app, update env vars in docker-compose.yml and use command:
 
 `docker-compose up -d`
 
