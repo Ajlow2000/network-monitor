@@ -6,8 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/exec"
-	"strings"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -32,23 +31,11 @@ func init() {
 	Error_Level = log.New(file, "ERROR: ", log.Ldate|log.Ltime)
 }
 
-const wanTarget = "8.8.8.8"
-const INTERVAL = 5
-
 type Event struct {
 	Loc   string
 	Desc  string
 	Start time.Time
 	End   time.Time
-}
-
-func pingCmd(target string) bool {
-	out, _ := exec.Command("ping", "8.8.8.8", "-c 1").Output()
-	if strings.Contains(string(out), "64 bytes from "+wanTarget) {
-		return true
-	} else {
-		return false
-	}
 }
 
 func ping(target string) bool {
@@ -57,20 +44,15 @@ func ping(target string) bool {
 	p := fastping.NewPinger()
 	ra, err := net.ResolveIPAddr("ip4:icmp", target)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		Error_Level.Printf(err.Error())
 	}
 	p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		// fmt.Printf("IP Addr: %s received, RTT: %v\n", addr.String(), rtt)
 		result = true
-	}
-	p.OnIdle = func() {
-		// fmt.Println("finish")
 	}
 	err = p.Run()
 	if err != nil {
-		fmt.Println(err)
+		Error_Level.Printf(err.Error())
 	}
 	return result
 }
@@ -95,7 +77,7 @@ func emailNotify(e Event) {
 	var body bytes.Buffer
 	t, err := template.ParseFiles("email.html")
 	if err != nil {
-		Error_Level.Printf("Error opening email.html template")
+		Error_Level.Printf("Error opening email.html template - " + err.Error())
 		return
 	}
 	t.Execute(&body, pe)
@@ -150,24 +132,27 @@ func getSSID() string {
 	// return ""
 }
 
-func main() {
+func monitor(interval int) {
+	target := "8.8.8.8"
+
 	var downtime_start time.Time
 	var downtime_end time.Time
 
-	log.Printf("Beginning network-monitor")
+	log.Printf("Beginning Network-Monitor")
+	Event_Level.Printf("Beginning Network-Monitor")
 	for {
-		result := ping(wanTarget)
+		result := ping(target)
 		if !result {
-			Info_Level.Printf("%v Unreachable", wanTarget)
-			log.Printf("%v Unreachable", wanTarget)
+			Info_Level.Printf("%v Unreachable", target)
+			log.Printf("%v Unreachable", target)
 			if downtime_start.IsZero() {
 				downtime_start = time.Now()
 				Event_Level.Printf("Outage Detected")
 				log.Printf("Outage Detected")
 			}
 		} else {
-			Info_Level.Printf("%v Received", wanTarget)
-			log.Printf("%v Received", wanTarget)
+			Info_Level.Printf("%v Received", target)
+			log.Printf("%v Received", target)
 			if !downtime_start.IsZero() && downtime_end.IsZero() {
 				downtime_end = time.Now()
 				duration := downtime_end.Sub(downtime_start)
@@ -181,6 +166,15 @@ func main() {
 				downtime_end = time.Time{}
 			}
 		}
-		time.Sleep(time.Second * INTERVAL)
+		time.Sleep(time.Minute * time.Duration(interval))
 	}
+}
+
+func main() {
+	interval, err := strconv.Atoi(os.Getenv("NM_PING_INTERVAL"))
+	if err != nil {
+		panic(err)
+	}
+
+	monitor(interval)
 }
